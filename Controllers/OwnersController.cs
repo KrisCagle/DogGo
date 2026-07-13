@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using DogGo;
 using DogGo.Models;
+using DogGo.Models.ViewModels;
 
 namespace DogGo.Controllers
 {
@@ -41,13 +42,31 @@ namespace DogGo.Controllers
                 return NotFound();
             }
 
-            return View(owner);
+            List<Walker> walkers = await _context.Walkers
+                .Where(w => w.NeighborhoodId == owner.NeighborhoodId)
+                .ToListAsync();
+
+            ProfileViewModel vm = new ProfileViewModel()
+            {
+                Owner = owner,
+                Dogs = owner.Dogs.ToList(),
+                Walkers = walkers
+            };
+
+            return View(vm);
         }
 
         // GET: Owners/Create
-        public IActionResult Create()
+        // GET: Owners/Create
+        public async Task<IActionResult> Create()
         {
-            return View();
+            OwnerFormViewModel vm = new OwnerFormViewModel()
+            {
+                Owner = new Owner(),
+                Neighborhoods = await _context.Neighborhoods.ToListAsync()
+            };
+
+            return View(vm);
         }
 
         // POST: Owners/Create
@@ -66,22 +85,28 @@ namespace DogGo.Controllers
             return View(owner);
         }
 
-        // GET: Owners/Edit/5
-        public async Task<IActionResult> Edit(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
+       // GET: Owners/Edit/5
+public async Task<IActionResult> Edit(int? id)
+{
+    if (id == null)
+    {
+        return NotFound();
+    }
 
-            var owner = await _context.Owners.FindAsync(id);
-            if (owner == null)
-            {
-                return NotFound();
-            }
-            return View(owner);
-        }
+    var owner = await _context.Owners.FindAsync(id);
+    if (owner == null)
+    {
+        return NotFound();
+    }
 
+    OwnerFormViewModel vm = new OwnerFormViewModel()
+    {
+        Owner = owner,
+        Neighborhoods = await _context.Neighborhoods.ToListAsync()
+    };
+
+    return View(vm);
+}
         // POST: Owners/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
